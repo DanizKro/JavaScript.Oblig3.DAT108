@@ -2,7 +2,7 @@ class DeltagerManager {
     constructor(root) {
         this.root = root;
         this.deltagere = [];
-        
+
         // Henter input
         this.startNummer = document.getElementById("startnummer");
         this.deltagerNavn = document.getElementById("deltagernavn");
@@ -25,15 +25,15 @@ class DeltagerManager {
     }
 
     registrerDeltager() {
-		const nummerInput = this.startNummer;          // Selve input-elementet, må være RAW om det skal valideres
-		const nummer = this.startNummer.value.trim();  /* Fjerner white-space OG konverterer til String, 
-	 												      for å brukes i tekst */
-		
+        const nummerInput = this.startNummer;          // Selve input-elementet, må være RAW om det skal valideres
+        const nummer = this.startNummer.value.trim();  /* Fjerner white-space OG konverterer til String, 
+	 												      for å brukes i tekst/sammenlignes */
+
         const navnInput = this.deltagerNavn;
         const tid = this.sluttid.value.trim();
 
         // Sjekker om alt er fylt ut
-        if (!nummer || !navnInput.value.trim() || !tid) {
+        if (!nummer || !nummer || !tid) {
             alert("Fyll ut alle felt");
             return;
         }
@@ -43,13 +43,13 @@ class DeltagerManager {
             navnInput.reportValidity();
             return;
         }
-		// sjekk om startnummer finnes fra før
-		if (this.deltagere.some(d => d.nummer === nummer)) {
-			 nummerInput.setCustomValidity("Dette startnummeret er allerede registrert.");
-			 nummerInput.reportValidity();
-			 nummerInput.focus();
-			 return;
-		 }
+        // sjekk om startnummer finnes fra før
+        if (this.deltagere.some(d => d.nummer === nummer)) {
+            nummerInput.setCustomValidity("Dette startnummeret er allerede registrert.");
+            nummerInput.reportValidity();
+            nummerInput.focus();
+            return;
+        }
 
         // Rydd opp og formater navn
         const navn = this.capitalizeWords(navnInput.value.trim());
@@ -69,31 +69,6 @@ class DeltagerManager {
         this.deltagerNavn.value = "";
         this.sluttid.value = "";
     }
-	
-
-    visResultater() {
-        this.resultatTbody.innerHTML = "";
-
-        if (this.deltagere.length === 0) {
-            this.resultatTom.style.display = "block";
-            return;
-        }
-
-        this.resultatTom.style.display = "none";
-
-        const sorterte = [...this.deltagere].sort((a, b) => a.tid.localeCompare(b.tid));
-
-        sorterte.forEach((deltager, index) => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${deltager.nummer}</td>
-                <td>${deltager.navn}</td>
-                <td>${deltager.tid}</td>
-            `;
-            this.resultatTbody.appendChild(tr);
-        });
-    }
 
     //Funksjon for å formatere navn
     capitalizeWords(str) {
@@ -103,6 +78,52 @@ class DeltagerManager {
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(" ");
     }
+
+ visResultater() {
+    const fraGrense = document.getElementById("nedregrense").value;
+    const tilGrense = document.getElementById("ovregrense").value;
+
+    if (this.deltagere.length === 0) {
+        alert("Ingen deltagere registrert!");
+        return;
+    }
+
+    function tidTilSek(tidStr) {
+        const [timer, minutter, sekunder] = tidStr.split(":").map(Number);
+        return timer * 3600 + minutter * 60 + sekunder;
+    }
+
+    const sorterte = [...this.deltagere].sort((a, b) => tidTilSek(a.tid) - tidTilSek(b.tid));
+
+    this.resultatTbody.innerHTML = "";
+
+    sorterte.forEach((deltager, index) => {
+        const sluttTidSek = tidTilSek(deltager.tid);
+
+        if ((fraGrense === "" || sluttTidSek >= tidTilSek(fraGrense)) &&
+            (tilGrense === "" || sluttTidSek <= tidTilSek(tilGrense))){
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${deltager.nummer}</td>
+                <td>${deltager.navn}</td>
+                <td>${deltager.tid}</td>
+            `;
+            this.resultatTbody.appendChild(tr);
+            this.resultatTom.style.display = "none";
+        }
+    });
+
+    // Hvis ingen resultat i intervallet
+    if (this.resultatTbody.children.length === 0) {
+        this.resultatTbody.innerHTML = `
+        <tr>
+            <td colspan="4"> Ingen resultater i valgt tidsintervall</td>
+        </tr>`;
+    }
+}
+
 }
 
 const rootelement = document.getElementById("root");
