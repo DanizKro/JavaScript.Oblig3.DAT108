@@ -52,7 +52,7 @@ class DeltagerManager {
         }
 
         // Rydd opp og formater navn
-        const navn = this.capitalizeWords(navnInput.value.trim());
+        const navn = this.formatName(navnInput.value.trim());
 
         // Legg til deltager
         const deltager = { nummer, navn, tid };
@@ -71,8 +71,8 @@ class DeltagerManager {
     }
 
     //Funksjon for å formatere navn
-    capitalizeWords(str) {
-        return str
+    formatName(string) {
+        return string
             .toLowerCase()
             .split(" ")
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -87,7 +87,7 @@ class DeltagerManager {
         alert("Ingen deltagere registrert!");
         return;
     }
-
+	
     function tidTilSek(tidStr) {
         const [timer, minutter, sekunder] = tidStr.split(":").map(Number);
         return timer * 3600 + minutter * 60 + sekunder;
