@@ -2,6 +2,12 @@
     display: none !important;
 }
 
+.feilmelding {
+    color: red;
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+
 .grid {
     display: grid;
 }
